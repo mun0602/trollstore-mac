@@ -1,5 +1,8 @@
-pymobiledevice3
+pymobiledevice3<=6.2.0
 bpylist2
 rich
 requests
 click
+customtkinter
+pyinstaller
+Pillow
