@@ -24,7 +24,7 @@ struct ContentView: View {
                 InstallerView(logoImage: logoImage)
             }
         }
-        .frame(width: 580, height: 490)
+        .frame(width: 620, height: 500)
         .background(Color(red: 0.1, green: 0.1, blue: 0.12))
         .onAppear(perform: loadLogo)
     }
@@ -233,29 +233,46 @@ struct InstallerView: View {
             Divider()
                 .background(Color.gray.opacity(0.2))
 
-            // Action
-            HStack {
+            // Action Panel
+            HStack(spacing: 10) {
+                // Copy Log Button
                 Button(action: copyToClipboard) {
-                    HStack(spacing: 6) {
+                    HStack(spacing: 4) {
                         Image(systemName: "doc.on.doc")
                         Text("Sao chép Log")
                     }
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.system(size: 11, weight: .semibold))
                     .foregroundColor(.white.opacity(0.8))
-                    .padding(.horizontal, 12)
+                    .padding(.horizontal, 10)
                     .padding(.vertical, 8)
                     .background(Color.white.opacity(0.08))
                     .cornerRadius(6)
                 }
                 .buttonStyle(PlainButtonStyle())
 
+                // Fix Python Button
+                Button(action: fixPython) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "wrench.and.screwdriver")
+                        Text("Sửa lỗi Python")
+                    }
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 8)
+                    .background(Color.red.opacity(0.3))
+                    .cornerRadius(6)
+                }
+                .buttonStyle(PlainButtonStyle())
+
                 Spacer()
                 
+                // Install Button
                 Button(action: startInstallation) {
                     Text(isRunning ? "Đang xử lý..." : "Cài đặt ngay")
-                        .font(.system(size: 14, weight: .bold))
+                        .font(.system(size: 13, weight: .bold))
                         .foregroundColor(.white)
-                        .padding(.horizontal, 24)
+                        .padding(.horizontal, 20)
                         .padding(.vertical, 8)
                         .background(isRunning ? Color.gray : Color.green)
                         .cornerRadius(8)
@@ -274,13 +291,61 @@ struct InstallerView: View {
         pasteboard.setString(logs, forType: .string)
     }
 
+    func fixPython() {
+        logs = "[*] Bắt đầu chẩn đoán lỗi Python hệ thống...\n"
+        
+        let fm = FileManager.default
+        
+        // 1. Kiểm tra python hệ thống
+        if fm.fileExists(atPath: "/usr/bin/python3") {
+            logs += "[+] Đã tìm thấy Python mặc định tại /usr/bin/python3\n"
+        } else {
+            logs += "[-] Không thấy Python tại /usr/bin/python3. Có khả năng Xcode Command Line Tools chưa được cài đặt.\n"
+        }
+        
+        // 2. Kiểm tra Python Homebrew
+        if fm.fileExists(atPath: "/opt/homebrew/bin/python3") {
+            logs += "[+] Phát hiện có Python Homebrew tại /opt/homebrew/bin/python3\n"
+        }
+        
+        // 3. Gọi trình cài đặt Command Line Tools của macOS
+        logs += "[*] Đang kích hoạt trình cài đặt Xcode Command Line Tools...\n"
+        
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/xcode-select")
+        process.arguments = ["--install"]
+        
+        do {
+            try process.run()
+            logs += "[+] Đã kích hoạt lệnh xcode-select. Nếu màn hình macOS hiển thị bảng hỏi cài đặt Command Line Tools, vui lòng nhấn 'Cài đặt' và chờ đợi hệ thống tải về hoàn tất.\n"
+        } catch {
+            logs += "[-] Lỗi không thể gọi lệnh xcode-select: \(error.localizedDescription)\n"
+        }
+    }
+
     func startInstallation() {
         isRunning = true
         isFinished = false
         logs = "[*] Khởi động tiến trình cài đặt bằng Native Process...\n"
         
+        let fm = FileManager.default
+        var pythonPath = "/usr/bin/python3"
+        
+        // Tự động kiểm tra và fallback sang Python của Homebrew nếu Python hệ thống thiếu
+        if !fm.fileExists(atPath: pythonPath) {
+            if fm.fileExists(atPath: "/opt/homebrew/bin/python3") {
+                pythonPath = "/opt/homebrew/bin/python3"
+                logs += "[*] Không thấy Python mặc định, tự động chuyển sang Python Homebrew tại \(pythonPath)\n"
+            } else {
+                logs += "[-] Lỗi: Không tìm thấy trình biên dịch Python nào (/usr/bin/python3 hoặc /opt/homebrew/bin/python3).\n"
+                logs += "[-] Vui lòng nhấn nút 'Sửa lỗi Python' màu đỏ để cài đặt bộ công cụ phát triển Xcode Command Line Tools.\n"
+                isRunning = false
+                return
+            }
+        }
+        
         let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/python3")
+        process.executableURL = URL(fileURLWithPath: pythonPath)
         
         guard let scriptPath = Bundle.main.path(forResource: "trollstore", ofType: "py") else {
             logs += "[-] Lỗi: Không tìm thấy file trollstore.py trong tài nguyên ứng dụng.\n"
