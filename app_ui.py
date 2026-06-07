@@ -22,15 +22,24 @@ class App(ctk.CTk):
         super().__init__()
 
         self.title("TrollStore Installer")
-        self.geometry("620x520")
+        self.geometry("620x560")
         self.resizable(False, False)
+
+        # Cấu hình màu sắc ứng dụng
+        self.configure(fg_color="#0F0F15")
 
         # Cấu hình grid
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
         # Khung chứa chính (Main Container)
-        self.main_frame = ctk.CTkFrame(self, corner_radius=15)
+        self.main_frame = ctk.CTkFrame(
+            self, 
+            corner_radius=16, 
+            fg_color="#161622", 
+            border_color="#252538", 
+            border_width=1
+        )
         self.main_frame.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
         self.main_frame.grid_columnconfigure(0, weight=1)
 
@@ -53,6 +62,7 @@ class App(ctk.CTk):
             self.header_frame, 
             text="TrollStore Installer", 
             font=ctk.CTkFont(family="SF Pro Display", size=26, weight="bold"),
+            text_color="#CDD6F4",
             anchor="w"
         )
         self.label_title.grid(row=0, column=1, sticky="w")
@@ -61,13 +71,13 @@ class App(ctk.CTk):
             self.header_frame, 
             text="Công cụ tự động cài đặt TrollStore qua SparseRestore", 
             font=ctk.CTkFont(family="SF Pro Text", size=13, weight="normal"),
-            text_color="#888888",
+            text_color="#A6ADC8",
             anchor="w"
         )
         self.label_subtitle.grid(row=1, column=1, sticky="w")
 
         # Phân cách
-        self.separator = ctk.CTkFrame(self.main_frame, height=2, fg_color="#2b2b2b")
+        self.separator = ctk.CTkFrame(self.main_frame, height=1, fg_color="#252538")
         self.separator.grid(row=1, column=0, padx=20, pady=5, sticky="ew")
 
         # 2. Hướng dẫn & Cài đặt
@@ -75,33 +85,84 @@ class App(ctk.CTk):
         self.config_frame.grid(row=2, column=0, padx=20, pady=10, sticky="ew")
         self.config_frame.grid_columnconfigure(1, weight=1)
 
-        # Hướng dẫn nhanh dạng Bullet
-        self.label_guide = ctk.CTkLabel(
-            self.config_frame,
-            text="👉 1. Kết nối iPhone/iPad qua cáp USB và chọn 'Tin cậy' (Trust).\n"
-                 "👉 2. Tắt Tìm iPhone (Find My iPhone) trong Cài đặt iCloud.\n"
-                 "👉 3. Chọn ứng dụng hệ thống để thay thế (Khuyên dùng: Tips/Mẹo).",
-            font=ctk.CTkFont(family="SF Pro Text", size=12),
-            justify="left",
-            anchor="w"
-        )
-        self.label_guide.grid(row=0, column=0, columnspan=2, pady=(0, 15), sticky="w")
+        # Hướng dẫn nhanh dạng Step Cards
+        self.steps_container = ctk.CTkFrame(self.config_frame, fg_color="transparent")
+        self.steps_container.grid(row=0, column=0, columnspan=2, pady=(0, 15), sticky="ew")
+        self.steps_container.grid_columnconfigure(0, weight=1)
+
+        def make_step_card(parent, num, text):
+            card = ctk.CTkFrame(
+                parent, 
+                fg_color="#1E1E2E", 
+                corner_radius=10, 
+                border_color="#2D2D3F", 
+                border_width=1
+            )
+            card.grid_columnconfigure(1, weight=1)
+            
+            badge = ctk.CTkLabel(
+                card, 
+                text=num, 
+                fg_color="#10B981", 
+                text_color="#FFFFFF",
+                corner_radius=10,
+                width=24,
+                height=24,
+                font=ctk.CTkFont(family="SF Pro Text", size=11, weight="bold")
+            )
+            badge.grid(row=0, column=0, padx=12, pady=8)
+            
+            label = ctk.CTkLabel(
+                card,
+                text=text,
+                font=ctk.CTkFont(family="SF Pro Text", size=12),
+                text_color="#CDD6F4",
+                anchor="w",
+                justify="left"
+            )
+            label.grid(row=0, column=1, padx=(0, 12), pady=8, sticky="w")
+            return card
+
+        card1 = make_step_card(self.steps_container, "01", "Kết nối iPhone/iPad qua cáp USB và chọn 'Tin cậy' (Trust).")
+        card1.grid(row=0, column=0, pady=(0, 6), sticky="ew")
+
+        card2 = make_step_card(self.steps_container, "02", "Tắt Tìm iPhone (Find My iPhone) trong Cài đặt iCloud.")
+        card2.grid(row=1, column=0, pady=(0, 6), sticky="ew")
+
+        card3 = make_step_card(self.steps_container, "03", "Chọn ứng dụng hệ thống để thay thế (Khuyên dùng: Tips).")
+        card3.grid(row=2, column=0, pady=(0, 6), sticky="ew")
 
         # Nhập tên App
-        self.label_app = ctk.CTkLabel(self.config_frame, text="Ứng dụng thay thế:", font=ctk.CTkFont(weight="bold"))
+        self.label_app = ctk.CTkLabel(
+            self.config_frame, 
+            text="Ứng dụng thay thế:", 
+            font=ctk.CTkFont(family="SF Pro Text", size=13, weight="bold"),
+            text_color="#CDD6F4"
+        )
         self.label_app.grid(row=1, column=0, padx=(0, 10), sticky="w")
 
         self.entry_app = ctk.CTkEntry(
             self.config_frame, 
             width=220, 
-            placeholder_text="Tips.app",
+            placeholder_text="Tips",
+            fg_color="#1E1E2E",
+            text_color="#CDD6F4",
+            border_color="#2D2D3F",
+            border_width=1,
+            corner_radius=10,
             font=ctk.CTkFont(family="SF Pro Text", size=13)
         )
         self.entry_app.insert(0, "Tips")
         self.entry_app.grid(row=1, column=1, sticky="w")
 
         # 3. Thanh tiến trình (Progress Bar)
-        self.progress_bar = ctk.CTkProgressBar(self.main_frame, height=8, corner_radius=4)
+        self.progress_bar = ctk.CTkProgressBar(
+            self.main_frame, 
+            height=6, 
+            corner_radius=3,
+            progress_color="#10B981",
+            fg_color="#2B2B36"
+        )
         self.progress_bar.grid(row=3, column=0, padx=20, pady=10, sticky="ew")
         self.progress_bar.set(0)
 
@@ -109,10 +170,12 @@ class App(ctk.CTk):
         self.textbox_log = ctk.CTkTextbox(
             self.main_frame, 
             height=140, 
-            font=ctk.CTkFont(family="Courier", size=12),
-            fg_color="#181818",
-            border_color="#2b2b2b",
+            font=ctk.CTkFont(family="Menlo", size=12),
+            fg_color="#0B0B10",
+            text_color="#A7F3D0",
+            border_color="#252538",
             border_width=1,
+            corner_radius=10,
             state="disabled"
         )
         self.textbox_log.grid(row=4, column=0, padx=20, pady=(5, 10), sticky="nsew")
@@ -127,6 +190,10 @@ class App(ctk.CTk):
             text="Bắt đầu cài đặt (Install)", 
             command=self.start_install_thread, 
             height=44, 
+            fg_color="#10B981",
+            hover_color="#059669",
+            text_color="#FFFFFF",
+            corner_radius=12,
             font=ctk.CTkFont(family="SF Pro Display", size=15, weight="bold")
         )
         self.btn_install.grid(row=0, column=0, sticky="ew")

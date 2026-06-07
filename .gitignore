@@ -169,3 +169,11 @@ mun-ai.icns
 test_swiftui
 test_swiftui.swift
 TrollStoreInstaller.spec
+
+# .NET / VS build artifacts
+[Bb]in/
+[Oo]bj/
+.vs/
+*.user
+*.suo
+*.sln.docstates

@@ -1,0 +1,269 @@
+<Window x:Class="TrollRestoreWin.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2000/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2000/xaml"
+        Title="TrollStore Installer" 
+        Height="500" Width="620"
+        WindowStyle="None" 
+        ResizeMode="NoResize"
+        AllowsTransparency="True" 
+        Background="Transparent"
+        WindowStartupLocation="CenterScreen">
+    
+    <Border CornerRadius="16" Background="#161622" BorderBrush="#252538" BorderThickness="1">
+        <Grid>
+            <!-- Header bar for dragging and close button -->
+            <Grid Height="35" VerticalAlignment="Top" Background="Transparent" MouseLeftButtonDown="Header_MouseLeftButtonDown">
+                <Button Content="✕" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,15,0"
+                        Width="20" Height="20" Background="Transparent" BorderBrush="Transparent" Foreground="#A6ADC8"
+                        FontWeight="Bold" FontSize="14" Click="CloseButton_Click" Cursor="Hand">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Foreground" Value="#F38BA8"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </Grid>
+
+            <!-- ================= LOGIN PANEL ================= -->
+            <Grid x:Name="LoginPanel" Visibility="Visible" Margin="0,35,0,0">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="18">
+                    <!-- Logo Border with ImageBrush for Rounded Corners -->
+                    <Border Width="100" Height="100" CornerRadius="20" BorderBrush="#252538" BorderThickness="1" HorizontalAlignment="Center">
+                        <Border.Background>
+                            <ImageBrush ImageSource="icon.png" Stretch="UniformToFill" FallbackImageSource="pack://application:,,,/TrollRestoreWin;component/icon.png"/>
+                        </Border.Background>
+                    </Border>
+                    
+                    <StackPanel Spacing="4" HorizontalAlignment="Center">
+                        <TextBlock Text="mun-ai" FontSize="26" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Hệ thống xác thực thiết bị" FontSize="13" Foreground="#888888" HorizontalAlignment="Center"/>
+                    </StackPanel>
+
+                    <StackPanel Spacing="6" HorizontalAlignment="Center">
+                        <TextBlock Text="Mật khẩu truy cập:" FontSize="12" FontWeight="SemiBold" Foreground="#888888" Margin="0,0,0,2"/>
+                        <Border Background="#15FFFFFF" CornerRadius="8" Width="250" Height="36" Padding="8,2" BorderBrush="#252538" BorderThickness="1">
+                            <PasswordBox x:Name="txtPassword" Background="Transparent" BorderThickness="0" Foreground="White" 
+                                         VerticalAlignment="Center" CaretBrush="White" KeyDown="TxtPassword_KeyDown"/>
+                        </Border>
+                    </StackPanel>
+
+                    <TextBlock x:Name="lblError" Text="❌ Sai mật khẩu, vui lòng thử lại!" FontSize="12" FontWeight="SemiBold" 
+                               Foreground="#F38BA8" HorizontalAlignment="Center" Visibility="Collapsed"/>
+
+                    <Button x:Name="btnLogin" Content="Đăng nhập" Width="150" Height="38" Background="#10B981" Foreground="Black"
+                            FontWeight="Bold" FontSize="14" Click="BtnLogin_Click" Cursor="Hand" Margin="0,10,0,0">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" CornerRadius="8">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#059669"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <!-- ================= INSTALLER PANEL ================= -->
+            <Grid x:Name="InstallerPanel" Visibility="Collapsed" Margin="0,35,0,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/> <!-- Header -->
+                    <RowDefinition Height="Auto"/> <!-- Divider -->
+                    <RowDefinition Height="Auto"/> <!-- Config -->
+                    <RowDefinition Height="*"/>    <!-- Console Logs -->
+                    <RowDefinition Height="Auto"/> <!-- Divider -->
+                    <RowDefinition Height="Auto"/> <!-- Footer -->
+                </Grid.RowDefinitions>
+
+                <!-- Header -->
+                <Grid Grid.Row="0" Margin="24,10,24,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <Border Grid.Column="0" Width="54" Height="54" CornerRadius="12" BorderBrush="#252538" BorderThickness="1" Margin="0,0,14,0">
+                        <Border.Background>
+                            <ImageBrush ImageSource="icon.png" Stretch="UniformToFill"/>
+                        </Border.Background>
+                    </Border>
+                    
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="mun-ai" FontSize="20" FontWeight="Bold" Foreground="White"/>
+                        <TextBlock Text="Bộ cài đặt TrollStore tự động và bảo mật" FontSize="12" Foreground="#888888"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Divider 1 -->
+                <Separator Grid.Row="1" Background="#252538" Margin="0,0,0,0" Height="1"/>
+
+                <!-- Config & Steps -->
+                <Grid Grid.Row="2" Margin="24,12,24,12">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <TextBlock Grid.Row="0" Text="Hướng dẫn nhanh:" FontSize="13" FontWeight="Bold" Foreground="#888888" Margin="0,0,0,8"/>
+                    
+                    <!-- Checklist -->
+                    <StackPanel Grid.Row="1" Spacing="6" Margin="0,0,0,12">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="✓" Foreground="#10B981" FontWeight="Bold" Margin="0,0,8,0"/>
+                            <TextBlock Text="Đảm bảo iPhone/iPad đã kết nối bằng cáp USB và chọn 'Tin cậy' (Trust)." Foreground="#CDD6F4" FontSize="11"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="✓" Foreground="#10B981" FontWeight="Bold" Margin="0,0,8,0"/>
+                            <TextBlock Text="Tắt Tìm iPhone (Find My iPhone) trong cài đặt iCloud." Foreground="#CDD6F4" FontSize="11"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="✓" Foreground="#10B981" FontWeight="Bold" Margin="0,0,8,0"/>
+                            <TextBlock Text="Nhập ứng dụng hệ thống sẽ bị thay thế (Khuyên dùng: Tips)." Foreground="#CDD6F4" FontSize="11"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- App Input -->
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="Ứng dụng thay thế:" FontSize="12" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <Border Background="#15FFFFFF" CornerRadius="6" Width="140" Height="28" Padding="6,2" BorderBrush="#2D2D3F" BorderThickness="1">
+                            <TextBox x:Name="txtAppName" Text="Tips" Background="Transparent" BorderThickness="0" Foreground="White" 
+                                     VerticalAlignment="Center" CaretBrush="White" FontSize="12"/>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Console Logs & Progress -->
+                <Grid Grid.Row="3" Margin="24,0,24,12">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <!-- Textbox for Console Logs -->
+                    <Border Grid.Row="0" CornerRadius="8" Background="#0B0B10" BorderBrush="#252538" BorderThickness="1" Padding="8">
+                        <ScrollViewer x:Name="scrollLogs" VerticalScrollBarVisibility="Auto">
+                            <TextBlock x:Name="txtLogs" Text="[*] Chờ thực hiện..." FontFamily="Consolas" FontSize="11" 
+                                       Foreground="#10B981" TextWrapping="Wrap" LineHeight="16"/>
+                        </ScrollViewer>
+                    </Border>
+                    
+                    <!-- Progress bar -->
+                    <StackPanel x:Name="panelProgress" Grid.Row="1" Margin="0,8,0,0" Visibility="Collapsed">
+                        <ProgressBar x:Name="progressBar" Height="6" IsIndeterminate="True" Background="#2B2B36" Foreground="#10B981" BorderThickness="0"/>
+                        <TextBlock Text="Đang thực hiện cài đặt..." FontSize="11" Foreground="#10B981" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Divider 2 -->
+                <Separator Grid.Row="4" Background="#252538" Margin="0,0,0,0" Height="1"/>
+
+                <!-- Footer / Action Buttons -->
+                <Grid Grid.Row="5" Margin="24,12,24,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <Button Grid.Column="0" x:Name="btnCopyLog" Content="Sao chép Log" Width="100" Height="30" 
+                            Background="#15FFFFFF" Foreground="White" FontSize="11" FontWeight="SemiBold" 
+                            Click="BtnCopyLog_Click" Cursor="Hand" Margin="0,0,10,0">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" CornerRadius="6">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#25FFFFFF"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <Button Grid.Column="1" x:Name="btnFixPython" Content="Sửa lỗi Python" Width="110" Height="30" 
+                            Background="#45EF4444" Foreground="#F38BA8" FontSize="11" FontWeight="SemiBold" 
+                            Click="BtnFixPython_Click" Cursor="Hand">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" CornerRadius="6">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#65EF4444"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <Button Grid.Column="3" x:Name="btnInstall" Content="Cài đặt ngay" Width="110" Height="32" 
+                            Background="#10B981" Foreground="Black" FontSize="13" FontWeight="Bold" 
+                            Click="BtnInstall_Click" Cursor="Hand">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" CornerRadius="8">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#059669"/>
+                                    </Trigger>
+                                    <Trigger Property="IsEnabled" Value="False">
+                                        <Setter Property="Background" Value="#2B2B36"/>
+                                        <Setter Property="Foreground" Value="#888888"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </Grid>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>
