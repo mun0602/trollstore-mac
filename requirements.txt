@@ -6,3 +6,4 @@ click
 customtkinter
 pyinstaller
 Pillow
+pywin32

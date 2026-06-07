@@ -7,6 +7,7 @@
         ResizeMode="NoResize"
         AllowsTransparency="True" 
         Background="Transparent"
+        Icon="icon.png"
         WindowStartupLocation="CenterScreen">
     
     <Border CornerRadius="16" Background="#161622" BorderBrush="#252538" BorderThickness="1">
