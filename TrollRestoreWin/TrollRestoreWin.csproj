@@ -19,16 +19,15 @@
     <None Update="icon.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="..\trollstore.py">
-      <Link>trollstore.py</Link>
+    <None Update="TrollRestore.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="..\requirements.txt">
-      <Link>requirements.txt</Link>
+    <None Update="..\TrollRestore.exe">
+      <Link>TrollRestore.exe</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="..\sparserestore\**\*.*">
-      <Link>sparserestore\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    <None Update="..\dist\TrollRestore.exe">
+      <Link>TrollRestore.exe</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

@@ -92,99 +92,44 @@ namespace TrollRestoreWin
             }
         }
 
-        // Sửa lỗi Python (Chẩn đoán & Cài đặt thư viện phụ thuộc)
+        // Chẩn đoán kết nối và Sửa lỗi Driver Apple (thay thế chức năng cài đặt Python vì file exe chạy độc lập)
         private void BtnFixPython_Click(object sender, RoutedEventArgs e)
         {
             btnFixPython.IsEnabled = false;
-            txtLogs.Text = "[*] Bắt đầu chẩn đoán lỗi Python trên Windows...\n";
+            txtLogs.Text = "[*] Khởi động chẩn đoán kết nối thiết bị và Driver trên Windows...\n";
 
             Task.Run(() =>
             {
-                string? pythonCmd = GetPythonExecutable();
-                if (pythonCmd == null)
+                AppendLog("[*] Để tương tác với thiết bị iOS qua cổng USB, Windows cần có driver chính thức từ Apple (thường đi kèm iTunes).\n");
+                AppendLog("[!] LƯU Ý: Vui lòng sử dụng bản iTunes tải trực tiếp từ trang web của Apple, KHÔNG sử dụng bản tải từ Microsoft Store vì bản đó bị hạn chế quyền truy cập thiết bị.\n\n");
+                AppendLog("[*] Đang tự động mở liên kết tải xuống iTunes 64-bit trực tiếp từ Apple...\n");
+
+                try
                 {
-                    AppendLog("[-] Không tìm thấy Python được cài đặt trên hệ thống của bạn hoặc chưa được thêm vào PATH.\n");
-                    AppendLog("[*] Đang mở trình duyệt tải về Python chính thức cho Windows...\n");
-                    AppendLog("[!] LƯU Ý: Khi cài đặt Python, vui lòng tích chọn \"Add Python to PATH\" trước khi nhấn Install.\n");
-
-                    try
-                    {
-                        Process.Start(new ProcessStartInfo("https://www.python.org/downloads/windows/") { UseShellExecute = true });
-                    }
-                    catch (Exception ex)
-                    {
-                        AppendLog($"[-] Không thể mở trình duyệt: {ex.Message}\n");
-                    }
-
-                    Dispatcher.BeginInvoke(new Action(() => { btnFixPython.IsEnabled = true; }));
-                    return;
+                    Process.Start(new ProcessStartInfo("https://www.apple.com/itunes/download/win64") { UseShellExecute = true });
+                }
+                catch (Exception ex)
+                {
+                    AppendLog($"[-] Không thể mở trình duyệt: {ex.Message}\n");
                 }
 
-                AppendLog($"[+] Phát hiện trình biên dịch Python khả dụng: '{pythonCmd}'\n");
-                AppendLog("[*] Đang định vị tệp cấu hình phụ thuộc requirements.txt...\n");
+                AppendLog("\n[*] Nếu thiết bị đã kết nối nhưng vẫn báo lỗi USB hoặc DeviceNotConnected:\n");
+                AppendLog("[*] Vui lòng cài đặt thêm UsbDk để hỗ trợ USB Passthrough:\n");
+                AppendLog("[*] Đang mở liên kết tải xuống UsbDk Releases...\n");
 
-                string reqPath = FindFilePath("requirements.txt");
-                if (!File.Exists(reqPath))
+                try
                 {
-                    AppendLog("[-] Không tìm thấy file requirements.txt. Đang cài đặt thủ công các thư viện thiết yếu...\n");
-                    InstallPythonModules(pythonCmd, "pymobiledevice3 bpylist2 rich requests click Pillow packaging");
+                    Process.Start(new ProcessStartInfo("https://github.com/daynix/UsbDk/releases") { UseShellExecute = true });
                 }
-                else
+                catch (Exception ex)
                 {
-                    AppendLog($"[+] Tìm thấy requirements.txt tại: {reqPath}\n");
-                    AppendLog("[*] Đang tiến hành cài đặt các thư viện qua pip (Quá trình này có thể mất vài phút)...\n");
-                    InstallPythonModules(pythonCmd, $"-r \"{reqPath}\"");
+                    AppendLog($"[-] Không thể mở trình duyệt UsbDk: {ex.Message}\n");
                 }
+
+                AppendLog("\n[+] Vui lòng cài đặt các driver trên, khởi động lại máy tính và thử lại.\n");
 
                 Dispatcher.BeginInvoke(new Action(() => { btnFixPython.IsEnabled = true; }));
             });
-        }
-
-        // Cài đặt các thư viện Python
-        private void InstallPythonModules(string pythonCmd, string arguments)
-        {
-            try
-            {
-                var psi = new ProcessStartInfo
-                {
-                    FileName = pythonCmd,
-                    Arguments = $"-m pip install {arguments}",
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                };
-
-                using (var proc = Process.Start(psi))
-                {
-                    if (proc != null)
-                    {
-                        proc.OutputDataReceived += (s, e) => { if (e.Data != null) AppendLog($"[Pip Output] {e.Data}\n"); };
-                        proc.ErrorDataReceived += (s, e) => { if (e.Data != null) AppendLog($"[Pip Error] {e.Data}\n"); };
-                        
-                        proc.BeginOutputReadLine();
-                        proc.BeginErrorReadLine();
-                        
-                        proc.WaitForExit();
-
-                        if (proc.ExitCode == 0)
-                        {
-                            AppendLog("[+] Đã cấu hình và cài đặt thành công tất cả thư viện Python cần thiết!\n");
-                        }
-                        else
-                        {
-                            AppendLog($"[-] Quá trình cài đặt pip kết thúc với mã lỗi: {proc.ExitCode}\n");
-                            AppendLog("[!] Lời khuyên: Hãy thử mở Command Prompt với tư cách Administrator và chạy lệnh:\n");
-                            AppendLog($"    {pythonCmd} -m pip install -U pip\n");
-                            AppendLog($"    {pythonCmd} -m pip install pymobiledevice3 bpylist2 rich requests click Pillow packaging\n");
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                AppendLog($"[-] Lỗi trong quá trình cài đặt thư viện: {ex.Message}\n");
-            }
         }
 
         // Bắt đầu cài đặt TrollStore
@@ -207,39 +152,30 @@ namespace TrollRestoreWin
 
             Task.Run(() =>
             {
-                string? pythonCmd = GetPythonExecutable();
-                if (pythonCmd == null)
+                string? exePath = FindInstallExecutable();
+                if (exePath == null)
                 {
-                    AppendLog("[-] Thất bại: Không tìm thấy Python trên máy tính của bạn.\n");
-                    AppendLog("[!] Vui lòng nhấn nút 'Sửa lỗi Python' màu đỏ bên dưới để cài đặt.\n");
+                    AppendLog("[-] Thất bại: Không tìm thấy file thực thi phụ trợ 'TrollRestore.exe' bên cạnh ứng dụng.\n");
+                    AppendLog("[!] Đảm bảo bạn đã giải nén đầy đủ tất cả các tệp tin và chạy TrollRestoreWin.exe trong cùng thư mục với TrollRestore.exe.\n");
                     ResetInstallerUI();
                     return;
                 }
 
-                string scriptPath = FindFilePath("trollstore.py");
-                if (!File.Exists(scriptPath))
-                {
-                    AppendLog($"[-] Thất bại: Không tìm thấy file script cài đặt 'trollstore.py' tại đường dẫn làm việc.\n");
-                    ResetInstallerUI();
-                    return;
-                }
-
-                AppendLog($"[+] Sử dụng Python: '{pythonCmd}'\n");
-                AppendLog($"[+] Thực thi script: '{scriptPath}'\n");
+                AppendLog($"[+] Tìm thấy file thực thi cài đặt: '{exePath}'\n");
                 AppendLog($"[*] Đang kết nối và chuẩn bị ghi đè ứng dụng hệ thống: {appName}...\n");
 
                 try
                 {
                     var psi = new ProcessStartInfo
                     {
-                        FileName = pythonCmd,
-                        Arguments = $"\"{scriptPath}\"",
+                        FileName = exePath,
+                        Arguments = "",
                         RedirectStandardOutput = true,
                         RedirectStandardError = true,
                         RedirectStandardInput = true,
                         UseShellExecute = false,
                         CreateNoWindow = true,
-                        WorkingDirectory = Path.GetDirectoryName(scriptPath) ?? AppDomain.CurrentDomain.BaseDirectory
+                        WorkingDirectory = Path.GetDirectoryName(exePath) ?? AppDomain.CurrentDomain.BaseDirectory
                     };
 
                     _installProcess = new Process { StartInfo = psi };
@@ -286,13 +222,12 @@ namespace TrollRestoreWin
                     _installProcess.BeginOutputReadLine();
                     _installProcess.BeginErrorReadLine();
 
-                    // Gửi tên ứng dụng thay thế vào standard input của trollstore.py ngay lập tức
+                    // Gửi tên ứng dụng thay thế vào standard input của TrollRestore.exe ngay lập tức
                     _installProcess.StandardInput.WriteLine(appName);
-
                 }
                 catch (Exception ex)
                 {
-                    AppendLog($"[-] Lỗi nghiêm trọng khi khởi động script: {ex.Message}\n");
+                    AppendLog($"[-] Lỗi nghiêm trọng khi khởi động tiến trình cài đặt: {ex.Message}\n");
                     ResetInstallerUI();
                 }
             });
@@ -320,11 +255,11 @@ namespace TrollRestoreWin
             }));
         }
 
-        // Tìm tệp tin linh hoạt từ BaseDirectory đến các cấp thư mục cha (cho debug)
-        private string FindFilePath(string fileName)
+        // Tìm file thực thi TrollRestore.exe linh hoạt từ BaseDirectory đến các cấp thư mục cha (cho debug)
+        private string? FindInstallExecutable()
         {
             string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-            string path = Path.Combine(baseDir, fileName);
+            string path = Path.Combine(baseDir, "TrollRestore.exe");
             if (File.Exists(path)) return path;
 
             string currentDir = baseDir;
@@ -334,50 +269,16 @@ namespace TrollRestoreWin
                 if (parent == null) break;
                 currentDir = parent.FullName;
 
-                path = Path.Combine(currentDir, fileName);
+                path = Path.Combine(currentDir, "TrollRestore.exe");
                 if (File.Exists(path)) return path;
 
-                path = Path.Combine(currentDir, "TrollRestoreWin", fileName);
+                path = Path.Combine(currentDir, "dist", "TrollRestore.exe");
+                if (File.Exists(path)) return path;
+
+                path = Path.Combine(currentDir, "TrollRestoreWin", "TrollRestore.exe");
                 if (File.Exists(path)) return path;
             }
 
-            return Path.Combine(baseDir, fileName); // fallback mặc định
-        }
-
-        // Kiểm tra trình thực thi Python nào khả dụng
-        private string? GetPythonExecutable()
-        {
-            string[] commands = { "python", "py", "python3" };
-            foreach (var cmd in commands)
-            {
-                try
-                {
-                    var psi = new ProcessStartInfo
-                    {
-                        FileName = cmd,
-                        Arguments = "--version",
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true,
-                        UseShellExecute = false,
-                        CreateNoWindow = true
-                    };
-                    using (var proc = Process.Start(psi))
-                    {
-                        if (proc != null)
-                        {
-                            proc.WaitForExit(2000);
-                            if (proc.ExitCode == 0)
-                            {
-                                return cmd;
-                            }
-                        }
-                    }
-                }
-                catch
-                {
-                    // Lệnh không tồn tại, bỏ qua tìm lệnh tiếp theo
-                }
-            }
             return null;
         }
     }
